@@ -1,40 +1,32 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { Configuration, OpenAIApi } = require('openai');
-require('dotenv').config();
+const backendUrl = 'https://news-chatgpt-backend.onrender.com/api/summarize';
 
-const app = express();  // <-- c'est ici que tu définis 'app'
-const port = process.env.PORT || 3000;
-
-app.use(cors({
-  origin: 'https://horus911.github.io'
-}));
-
-app.use(bodyParser.json());
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-app.post('/api/summarize', async (req, res) => {
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: 'No text provided' });
+async function summarize(text) {
+  if (!text.trim()) {
+    alert("Merci de saisir un texte !");
+    return;
+  }
 
   try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: `Summarize this:\n${text}` }],
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
     });
-    const summary = completion.data.choices[0].message.content.trim();
-    res.json({ summary });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'OpenAI API error' });
+
+    if (!response.ok) {
+      throw new Error(`Erreur réseau: ${response.status}`);
+    }
+
+    const data = await response.json();
+    document.getElementById('result').textContent = data.summary || 'Pas de résumé obtenu.';
+  } catch (error) {
+    document.getElementById('result').textContent = 'Erreur : ' + error.message;
+    console.error(error);
   }
+}
+
+document.getElementById('submit-btn').addEventListener('click', () => {
+  const inputText = document.getElementById('input-text').value;
+  summarize(inputText);
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
