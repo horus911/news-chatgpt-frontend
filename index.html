@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>News Summary with ChatGPT</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    textarea { width: 100%; height: 100px; }
-    #result { margin-top: 1em; white-space: pre-wrap; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>News Summary with ChatGPT</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 2em; }
+  textarea { width: 100%; height: 120px; }
+  button { padding: 0.5em 1em; margin-top: 1em; }
+  #result { margin-top: 1em; white-space: pre-wrap; }
+</style>
 </head>
 <body>
+  <h1>Résumé de texte avec ChatGPT</h1>
+  <textarea id="inputText" placeholder="Collez votre texte ici..."></textarea><br />
+  <button id="summarizeBtn">Résumer</button>
 
-<h1>News Summary with ChatGPT</h1>
+  <div id="result"></div>
 
-<textarea id="input-text" placeholder="Colle ici ton texte à résumer..."></textarea><br />
-<button id="submit-btn">Résumer</button>
+  <script>
+    const backendURL = 'https://news-chatgpt-backend.onrender.com/api/summarize';
 
-<div id="result"></div>
+    document.getElementById('summarizeBtn').onclick = async () => {
+      const text = document.getElementById('inputText').value.trim();
+      if (!text) {
+        alert('Veuillez saisir un texte à résumer.');
+        return;
+      }
+      document.getElementById('result').textContent = 'Chargement...';
 
-<script src="script.js"></script>
+      try {
+        const response = await fetch(backendURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur réseau: ' + response.status);
+        }
+
+        const data = await response.json();
+        if (data.summary) {
+          document.getElementById('result').textContent = data.summary;
+        } else {
+          document.getElementById('result').textContent = 'Pas de résumé reçu.';
+        }
+      } catch (err) {
+        document.getElementById('result').textContent = 'Erreur: ' + err.message;
+      }
+    };
+  </script>
 </body>
 </html>
-
