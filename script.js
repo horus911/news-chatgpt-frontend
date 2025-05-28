@@ -1,24 +1,40 @@
-const backendUrl = 'https://news-chatgpt-backend.onrender.com'; // ← remplace par ton URL Render
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require('openai');
+require('dotenv').config();
 
-document.getElementById('summarizeBtn').addEventListener('click', async () => {
-  const text = document.getElementById('inputText').value.trim();
-  if (!text) {
-    alert('Please enter some text to summarize.');
-    return;
-  }
+const app = express();  // <-- c'est ici que tu définis 'app'
+const port = process.env.PORT || 3000;
 
-  document.getElementById('summary').textContent = 'Loading...';
+app.use(cors({
+  origin: 'https://horus911.github.io'
+}));
+
+app.use(bodyParser.json());
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+app.post('/api/summarize', async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'No text provided' });
 
   try {
-    const response = await fetch(`${backendUrl}/api/summarize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: `Summarize this:\n${text}` }],
     });
-    if (!response.ok) throw new Error('Network response was not ok');
-    const data = await response.json();
-    document.getElementById('summary').textContent = data.summary || 'No summary returned.';
-  } catch (err) {
-    document.getElementById('summary').textContent = 'Error: ' + err.message;
+    const summary = completion.data.choices[0].message.content.trim();
+    res.json({ summary });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'OpenAI API error' });
   }
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
