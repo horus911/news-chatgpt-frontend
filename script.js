@@ -27,3 +27,6 @@ document.getElementById("summaryForm").addEventListener("submit", async (e) => {
     resultDiv.textContent = "Error summarizing the text.";
   }
 });
+git add script.js
+git commit -m "Update backend URL"
+git push
