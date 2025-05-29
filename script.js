@@ -29,3 +29,6 @@ document.getElementById('submit-btn').addEventListener('click', () => {
   const inputText = document.getElementById('input-text').value;
   summarize(inputText);
 });
+git add script.js
+git commit -m "Update backend URL"
+git push
