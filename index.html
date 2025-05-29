@@ -1,55 +1,44 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>News Summary with ChatGPT</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 2em; }
-  textarea { width: 100%; height: 120px; }
-  button { padding: 0.5em 1em; margin-top: 1em; }
-  #result { margin-top: 1em; white-space: pre-wrap; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Résumé News avec ChatGPT</title>
 </head>
 <body>
-  <h1>Résumé de texte avec ChatGPT</h1>
-  <textarea id="inputText" placeholder="Collez votre texte ici..."></textarea><br />
-  <button id="summarizeBtn">Résumer</button>
-
-  <div id="result"></div>
+  <h1>Résumé d'articles de news</h1>
+  <textarea id="newsText" rows="10" cols="60" placeholder="Colle ton texte ici..."></textarea>
+  <br />
+  <button id="btnSummarize">Résumer</button>
+  <p id="result"></p>
 
   <script>
-    const backendURL = 'https://news-chatgpt-backend.onrender.com/api/summarize';
-
-    document.getElementById('summarizeBtn').onclick = async () => {
-      const text = document.getElementById('inputText').value.trim();
+    document.getElementById('btnSummarize').addEventListener('click', async () => {
+      const text = document.getElementById('newsText').value.trim();
       if (!text) {
-        alert('Veuillez saisir un texte à résumer.');
+        alert('Merci de coller un texte à résumer.');
         return;
       }
+
       document.getElementById('result').textContent = 'Chargement...';
 
       try {
-        const response = await fetch(backendURL, {
+        const response = await fetch('https://news-chatgpt-backend.onrender.com/api/summarize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
         });
 
         if (!response.ok) {
-          throw new Error('Erreur réseau: ' + response.status);
+          throw new Error('Erreur lors de la requête');
         }
 
         const data = await response.json();
-        if (data.summary) {
-          document.getElementById('result').textContent = data.summary;
-        } else {
-          document.getElementById('result').textContent = 'Pas de résumé reçu.';
-        }
-      } catch (err) {
-        document.getElementById('result').textContent = 'Erreur: ' + err.message;
+        document.getElementById('result').textContent = data.summary || 'Pas de résumé reçu.';
+      } catch (error) {
+        document.getElementById('result').textContent = 'Erreur réseau ou serveur.';
+        console.error(error);
       }
-    };
+    });
   </script>
 </body>
 </html>
