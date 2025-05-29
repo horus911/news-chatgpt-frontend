@@ -1,34 +1,29 @@
-const backendUrl = 'https://news-chatgpt-backend.onrender.com/api/summarize';
+const backendUrl = "https://news-chatgpt-backend.onrender.com/api/summarize";
 
-async function summarize(text) {
-  if (!text.trim()) {
-    alert("Merci de saisir un texte !");
-    return;
-  }
+document.getElementById("summaryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const inputText = document.getElementById("newsInput").value;
+  const resultDiv = document.getElementById("result");
+  resultDiv.textContent = "Loading...";
 
   try {
     const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: inputText })
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur réseau: ${response.status}`);
+      throw new Error("API error");
     }
 
     const data = await response.json();
-    document.getElementById('result').textContent = data.summary || 'Pas de résumé obtenu.';
+    resultDiv.textContent = data.summary;
   } catch (error) {
-    document.getElementById('result').textContent = 'Erreur : ' + error.message;
-    console.error(error);
+    console.error("Error:", error);
+    resultDiv.textContent = "Error summarizing the text.";
   }
-}
-
-document.getElementById('submit-btn').addEventListener('click', () => {
-  const inputText = document.getElementById('input-text').value;
-  summarize(inputText);
 });
-git add script.js
-git commit -m "Update backend URL"
-git push
